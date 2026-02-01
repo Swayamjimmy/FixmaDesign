@@ -3,8 +3,8 @@ import Link from "next/link"
 const Logo = () => {
   return (
     <Link href="/" className="flex-1 flex items-center gap-2 text-2xl" >
-        <span className="inline-block font-extrabold text-primary">X</span>
-        <span className="font-semibold text-foreground">design.ai</span>
+        <h1 className="font-extrabold text-primary">Fixma -</h1>
+        <p className="font-extrabold text-foreground">Design.ai</p>
     </Link>
   )
 }
