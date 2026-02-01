@@ -11,3 +11,23 @@ export const useGetProjectById = (projectId: string) => {
         enabled: !!projectId,
     });
 };
+
+
+export const useGenerateDesignById = (projectId: string | null) => {
+    const router = useRouter();
+    return useMutation({
+        mutationFn: async (prompt: string) => {
+            const response = await axios.post(`/api/projects/${projectId}`, {
+                prompt,
+            });
+            return response.data;
+        },
+        onSuccess: (data) => {
+            toast.success("Generation started");
+        },
+        onError: (error) => {
+            console.log("Project failed", error);
+            toast.error("Failed to generate");
+        },
+    });
+};

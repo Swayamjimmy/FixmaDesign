@@ -13,9 +13,20 @@ import { Separator } from "../ui/separator";
 import PromptInput from "../prompt-input";
 
 
-const CanvasFloatingToolbar = () => {
+const CanvasFloatingToolbar = ({} : {
+    projectId: string;
+}) => {
     const { themes, theme: currentTheme, setTheme } = useCanvas();
     const [promptText, setPromptText] = useState<string>("");
+
+    const {mutate, isPending} = useGenerateDesignById()
+
+    const handleAIGenerate = () => {
+        if(!promptText) {
+            return;
+        }
+        mutate(promptText);
+    }
   return (
     <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none px-4">
         <div className="w-full max-w-2xl bg-background dark:bg-gray-950 rounded-full shadow-xl border pointer-events-auto">

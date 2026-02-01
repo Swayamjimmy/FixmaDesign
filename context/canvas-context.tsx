@@ -1,7 +1,9 @@
 "use client"
-import { createContext, useContext, ReactNode, useCallback, useState } from "react";
+import { useInngestSubscription } from "@inngest/realtime/hooks";
+import { createContext, useContext, ReactNode, useCallback, useState, useEffect } from "react";
 import { THEME_LIST, ThemeType } from "../lib/themes";
 import { FrameType } from "../types/project";
+import { fetchRealtimeSubscriptionToken } from "../app/action/realtime";
 
 export type LoadingStatusType = 
     | "idle"
@@ -53,13 +55,81 @@ export const CanvasProvider = ({
         hasInitialData ? "idle" : "running"
     );
 
+    const [prevProjectId, setPrevProjectId] = useState(projectId);
+    if(projectId !== prevProjectId) {
+        setPrevProjectId(projectId);
+        setFrames(initialFrames);
+        setThemeId(initialThemeId || THEME_LIST[0].id);
+        setSelectedFrameId(null);
+    }
+
     const theme = THEME_LIST.find((t) => t.id === themeId);
     const selectedFrame = 
         selectedFrameId && frames.length !== 0 
             ? frames.find((f) => f.id === selectedFrameId) || null
             : null;
 
+    
     //Update the LoadingStatus by Inngest
+      const { freshData } = useInngestSubscription({
+    refreshToken: fetchRealtimeSubscriptionToken,
+  });
+
+    useEffect(() => {
+        if(!freshData || freshData.length === 0) return;
+
+        freshData.forEach((message) => {
+            const {data, topic} = message;
+        
+            if(data.projectId !== projectId) return;
+            switch (topic) {
+                case "generation.start":
+                    setLoadingStatus("running");
+                    break;
+                case "analysis.start":
+                    setLoadingStatus("analyzing");
+                    break;
+                case "analysis.complete":
+                    if (data.theme) setThemeId(data.theme);
+
+                    if(data.screens && data.screens.length > 0) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const skeletonFrames: FrameType[] = data.screens.map((s: any) => ({
+                            id: s.id,
+                            htmlContent: "",
+                            title: s.name,
+                            isLoading: true,
+                        }));
+                        setFrames((prev) => [...prev, ...skeletonFrames]);
+                    }
+                    break;
+                case "frame.created":
+                    if(data.frame) {
+                        setFrames((prev) => {
+                            // Replace loading skeleton with actual frame
+                            const newFrames = [...prev];
+                            const idx = newFrames.findIndex((f) => f.id === data.screenId);
+                            if(idx !== -1) {
+                                newFrames[idx] = data.frame;
+                            } else {
+                                newFrames.push(data.frame);
+                            }
+                            return newFrames;
+                        });
+                    }
+                    break;
+                case "generation.complete":
+                    console.log("[Canvas] Generation complete");
+                    setLoadingStatus("completed");
+                    setTimeout(() => {
+                        setLoadingStatus("idle");
+                    }, 1000);
+                    break;
+                default:
+                    break;
+            }
+        });
+    }, [freshData, projectId]);
 
     const addFrame = useCallback((frame: FrameType) => {
         setFrames((prev) => [...prev, frame]);
