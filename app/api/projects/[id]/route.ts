@@ -2,6 +2,7 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { NextRequest, NextResponse, userAgent } from "next/server";
 import { useContext } from "react";
 import prisma from "../../../../lib/prisma";
+import { inngest } from "../../../../inngest/client";
 
 
 export async function GET(

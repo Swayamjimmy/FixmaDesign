@@ -73,7 +73,7 @@ export const generateScreens = inngest.createFunction(
             `.trim();
 
             const {object} = await generateObject({
-            model: openrouter.chat("google/gemini-2.5-flash-lite"),
+            model: openrouter.chat("google/gemini-2.0-flash-001"),
             schema: AnalysisSchema,
             system: ANALYSIS_PROMPT,
             prompt: analysisPrompt,
@@ -119,7 +119,7 @@ export const generateScreens = inngest.createFunction(
         
         await step.run(`generate-screen-${i}`, async () => {
             const result = await generateText({
-            model: openrouter.chat("google/gemini-2.5-flash-lite"),
+            model: openrouter.chat("google/gemini-2.0-flash-001"),
             system: GENERATION_SYSTEM_PROMPT,
             tools: {
                 searchUnsplash: unsplashTool,

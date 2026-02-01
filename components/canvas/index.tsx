@@ -83,7 +83,9 @@ const Canvas = ({
     return (
         <>
             <div className='relative w-full h-full'>
-                <CanvasFloatingToolbar />
+                <CanvasFloatingToolbar 
+                projectId={projectId}
+                />
                 {currentStatus && <CanvasLoader status={currentStatus}/>}
                 <TransformWrapper
                     initialScale={0.53}
